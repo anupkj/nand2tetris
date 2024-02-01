@@ -14,5 +14,23 @@ CHIP DMux4Way {
     OUT a, b, c, d;
 
     PARTS:
+    // 1st method - user more gates
+    // Not(in=sel[0], out=nosel0);
+    // Not(in=sel[1], out=nosel1);
+    // And(a=sel[0], b=sel[1], out=sel0sel1);
+    // And(a=sel[0], b=nosel1, out=sel0nosel1);
+    // And(a=nosel0, b=sel[1], out=nosel0sel1);
+    // And(a=nosel0, b=nosel1, out=nosel0nosel1);
+    // And(a=sel0sel1, b=in, out=d);
+    // And(a=sel0nosel1, b=in, out=b);
+    // And(a=nosel0sel1, b=in, out=c);
+    // And(a=nosel0nosel1, b=in, out=a);
+
+    DMux(in=in, sel=sel[1], a=outputA, b=outputB);
+    DMux(in=outputA, sel=sel[0], a=a, b=b);
+    DMux(in=outputB, sel=sel[0], a=c, b=d);
+    
+
+
     //// Replace this comment with your code.
 }
