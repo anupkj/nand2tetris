@@ -33,4 +33,39 @@ CHIP CPU {
 
     PARTS:
     //// Replace this comment with your code.
+
+    And(a=instruction[15] ,b=instruction[5] ,out=d1 );
+    And(a=instruction[15] ,b=instruction[4] ,out=d2 );
+    And(a=instruction[15] ,b=instruction[3] ,out=d3 , out=writeM);
+    And(a=instruction[15] ,b=instruction[2] ,out=j1 );
+    And(a=instruction[15] ,b=instruction[1] ,out=j2 );
+    And(a=instruction[15] ,b=instruction[0] ,out=j3 );
+
+    // address register
+    Not(in=instruction[15], out=instructionMsbNot);
+    Mux16(a=aluOutput, b=instruction, sel=instructionMsbNot, out=addressRegInput);
+    Or(a=d1, b=instructionMsbNot, out=loadA);
+    ARegister(in=addressRegInput, load=loadA, out=addressRegOutput, out[0..14] = addressM);
+
+    // Data register
+    DRegister(in=aluOutput, load=d2, out=dataRegOutput);
+
+    // ALU
+    Mux16(a=addressRegOutput, b=inM, sel=instruction[12], out=aluInput2);
+    ALU(x=dataRegOutput, y=aluInput2, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=outM, zr=zr, ng=ng, out = aluOutput);
+
+    // program counter
+    Or(a=zr, b=ng, out=zrng);
+    Not(in=zrng, out=ps);
+
+    And(a=j3, b=ps, out=jgt);
+    And(a=j2, b=zr, out=jeq);
+    And(a=j1, b=ng, out = jlt);
+
+    Or(a=jgt, b=jeq, out=temp);
+    Or(a=temp, b=jlt, out=jumpa);
+
+    Not(in=jumpa, out=incra);
+
+    PC(in=addressRegOutput, load=jumpa, inc=incra, reset=reset, out[0..14]=pc, out[15]=false);
 }
